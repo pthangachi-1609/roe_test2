@@ -1,0 +1,65 @@
+name: Matrix Build with Artifact Management
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # --- 1. Define the Matrix Build Job ---
+  matrix-build-and-upload:
+    runs-on: ${{ matrix.os }}
+
+    # Define the matrix strategy with 3 distinct variants
+    strategy:
+      matrix:
+        # Define 3 combinations of OS and Python versions
+        include:
+          - python: '3.9'
+            os: ubuntu-latest
+            variant_id: py39-ubuntu
+          - python: '3.11'
+            os: macos-latest
+            variant_id: py311-macos
+          - python: '3.12'
+            os: windows-latest
+            variant_id: py312-windows
+
+    # The variant ID is used for the artifact name
+    env:
+      ARTIFACT_NAME: build-02f2205-${{ matrix.variant_id }}
+      
+    steps:
+      # --- Setup Python Environment ---
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          
+      # --- Build Step & Identifier ---
+      - name: Build and Generate Artifact
+        id: matrix-02f2205 # Required step identifier
+        run: |
+          # The "build" step: generate a unique artifact (text file) 
+          echo "Build successful on ${{ matrix.os }} using Python ${{ matrix.python }}" > artifact_output.txt
+          echo "Generated at $(date)" >> artifact_output.txt
+          
+          # Print the artifact name being used for verification
+          echo "Generated artifact file content:"
+          cat artifact_output.txt
+          echo "Artifact will be named: ${{ env.ARTIFACT_NAME }}"
+
+      # --- Upload Artifact Step ---
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }} # Uses the unique, matrix-defined name
+          path: artifact_output.txt
+          # The compression option is optional but good practice
+          compression-level: 0
