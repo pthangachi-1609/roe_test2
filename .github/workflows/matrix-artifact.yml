@@ -7,11 +7,14 @@ on:
   pull_request:
     branches:
       - main
+  # Allows you to manually trigger the workflow from the GitHub UI
+  workflow_dispatch: 
 
 jobs:
   # --- 1. Define the Matrix Build Job ---
   matrix-build-and-upload:
     runs-on: ${{ matrix.os }}
+    name: Build on ${{ matrix.os }} with Python ${{ matrix.python }}
 
     # Define the matrix strategy with 3 distinct variants
     strategy:
@@ -33,7 +36,7 @@ jobs:
       ARTIFACT_NAME: build-02f2205-${{ matrix.variant_id }}
       
     steps:
-      # --- Setup Python Environment ---
+      # --- Setup Environment ---
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -43,23 +46,24 @@ jobs:
           python-version: ${{ matrix.python }}
           
       # --- Build Step & Identifier ---
-      - name: Build and Generate Artifact
-        id: matrix-02f2205 # Required step identifier
+      - name: Build and Generate Unique Artifact
+        # REQUIRED: Step identifier "matrix-02f2205" added here
+        id: matrix-02f2205 
         run: |
-          # The "build" step: generate a unique artifact (text file) 
+          # The "build" step: generate a unique artifact (text file)
           echo "Build successful on ${{ matrix.os }} using Python ${{ matrix.python }}" > artifact_output.txt
+          echo "Variant ID: ${{ matrix.variant_id }}" >> artifact_output.txt
           echo "Generated at $(date)" >> artifact_output.txt
           
           # Print the artifact name being used for verification
-          echo "Generated artifact file content:"
-          cat artifact_output.txt
           echo "Artifact will be named: ${{ env.ARTIFACT_NAME }}"
 
       # --- Upload Artifact Step ---
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }} # Uses the unique, matrix-defined name
+          # Uses the unique, matrix-defined name (prefix: build-02f2205-<variant>)
+          name: ${{ env.ARTIFACT_NAME }} 
           path: artifact_output.txt
-          # The compression option is optional but good practice
-          compression-level: 0
+          # Prevents creation of an unnecessary top-level folder
+          retention-days: 1
