@@ -6,28 +6,41 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.9', '3.10', '3.11']
+  build-ubuntu:
+    runs-on: ubuntu-latest
     steps:
       - name: matrix-02f2205
-        run: echo "Running variant ${{ matrix.os }}-py${{ matrix.python-version }}"
+        run: echo "Building for ubuntu-latest"
       - name: Generate build artifact
-        run: |
-          echo "Build output for ${{ matrix.os }} - Python ${{ matrix.python-version }}" > output.txt
+        run: echo "Build output from ubuntu-latest" > output.txt
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-02f2205-${{ matrix.os }}-py${{ matrix.python-version }}
+          name: build-02f2205-ubuntu-latest
           path: output.txt
 
-  validate:
-    needs: build
-    runs-on: ubuntu-latest
+  build-macos:
+    runs-on: macos-latest
     steps:
-      - name: List uploaded artifacts
-        run: echo "Artifacts uploaded in matrix run: See job summary."
+      - name: matrix-02f2205
+        run: echo "Building for macos-latest"
+      - name: Generate build artifact
+        run: echo "Build output from macos-latest" > output.txt
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-02f2205-macos-latest
+          path: output.txt
 
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: matrix-02f2205
+        run: echo "Building for windows-latest"
+      - name: Generate build artifact
+        run: echo "Build output from windows-latest" > output.txt
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-02f2205-windows-latest
+          path: output.txt
